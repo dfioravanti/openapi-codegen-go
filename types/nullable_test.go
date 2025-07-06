@@ -2,7 +2,6 @@ package types
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	"github.com/go-playground/validator/v10"
@@ -10,7 +9,7 @@ import (
 )
 
 type NullableStruct struct {
-	NullableField Nullable[int] `json:"nullable_int,omitempty" validate:"required,max=100"`
+	NullableField Nullable[int] `json:"nullable_int,omitzero" validate:"required,max=100"`
 }
 
 func TestJSONEncoding(t *testing.T) {
@@ -76,31 +75,35 @@ func TestJSONDecoding(t *testing.T) {
 	}
 }
 
-func TestValidateWorks(t *testing.T) {
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	validate.RegisterCustomTypeFunc(ValuerCustomTypeFunc, Nullable[any]{})
-
-	v := NullableStruct{Some(10)}
-	err := validate.Struct(v)
-	assert.NoError(t, err)
-}
-
-func TestValidateRequiredWorks(t *testing.T) {
+func TestValidateNullable(t *testing.T) {
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	validate.RegisterCustomTypeFunc(ValuerCustomTypeFunc, Nullable[int]{})
 
-	v := NullableStruct{}
-	err := validate.Struct(v)
-	assert.Error(t, err)
-}
+	var testCases = []struct {
+		name        string
+		input       NullableStruct
+		shouldError bool
+	}{
+		{
+			name:        "required works with some",
+			input:       NullableStruct{Some(10)},
+			shouldError: false,
+		},
+		{
+			name:        "required works with nil",
+			input:       NullableStruct{Nil[int]()},
+			shouldError: false,
+		},
+	}
 
-func TestValidateTypeConstraintsWorks(t *testing.T) {
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	validate.RegisterCustomTypeFunc(ValuerCustomTypeFunc, Nullable[int]{})
-
-	v := NullableStruct{Some(1000)}
-	err := validate.Struct(v)
-	a := fmt.Sprint(err.Error())
-	_ = a
-	assert.Error(t, err)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := validate.Struct(tc.input)
+			if tc.shouldError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
 }

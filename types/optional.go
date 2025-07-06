@@ -71,3 +71,11 @@ func (o Optional[T]) String() string {
 	var zero T
 	return fmt.Sprintf("Optional[%T](empty)", zero)
 }
+
+func (n Optional[T]) Value() (Value, error) {
+	if n.present {
+		return n.value, nil
+	}
+
+	return nil, nil
+}
