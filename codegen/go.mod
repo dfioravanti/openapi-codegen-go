@@ -3,9 +3,9 @@ module github.com/dfioravanti/openapi-codegen-go
 go 1.24
 
 require (
-	github.com/alexflint/go-arg v1.5.1
+	github.com/alexflint/go-arg v1.6.0
 	github.com/dave/jennifer v1.7.1
-	github.com/pb33f/libopenapi v0.22.3
+	github.com/pb33f/libopenapi v0.23.0
 	github.com/stretchr/testify v1.10.0
 )
 
